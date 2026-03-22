@@ -9,20 +9,21 @@ public class BattleManager {
     private final Scanner scanner = new Scanner(System.in);
     private int globalTurnCount = 1;
 
-    public void runBattle(List<Character> partyA, List<Character> partyB) {
+    public void runBattle(Party partyA, List<Character> partyB) {
+        List<Character> playerPartyList = partyA.getMembers(); // ดึง List ออกมาใช้ในระบบเดิม
         System.out.println("\n" + "=".repeat(30));
         System.out.println(" ⚔️ BATTLE START! ⚔️ ");
         System.out.println("=".repeat(30));
-        while (isPartyAlive(partyA) && isPartyAlive(partyB)) {
+        while (partyA.isAlive() && isPartyAlive(partyB)) {
             System.out.println("\n--- TURN " + globalTurnCount + " ---");
             List<Character> allParticipants = new ArrayList<>();
-            allParticipants.addAll(partyA);
+            allParticipants.addAll(playerPartyList);
             allParticipants.addAll(partyB);
             allParticipants.sort((c1, c2) -> Double.compare(c2.getSpeed(), c1.getSpeed()));
             for (Character active : allParticipants) {
-                if (!active.isAlive() || !isPartyAlive(partyA) || !isPartyAlive(partyB)) continue;
-                List<Character> allies = partyA.contains(active) ? partyA : partyB;
-                List<Character> enemies = partyA.contains(active) ? partyB : partyA;
+                if (!active.isAlive() || !partyA.isAlive() || !isPartyAlive(partyB)) continue;
+                List<Character> allies = playerPartyList.contains(active) ? playerPartyList : partyB;
+                List<Character> enemies = playerPartyList.contains(active) ? partyB : playerPartyList;
                 BattleInfo.setAllies(allies);
                 BattleInfo.setEnemies(enemies);
                 if (active.isAuto) {
@@ -45,8 +46,7 @@ public class BattleManager {
             System.out.println("3. Check Status");
             System.out.println("4. Toggle Auto Mode");
             System.out.print("Selection: ");
-            int choice = scanner.hasNextInt() ? scanner.nextInt() : 0;
-            scanner.nextLine();
+            int choice = InputHandler.getValidChoice(1, 4);
             switch (choice) {
                 case 1 -> turnFinished = performAttackSelection(active, enemies, active.getAttack(), "Attack");
                 case 2 -> {
@@ -80,7 +80,7 @@ public class BattleManager {
         }
         System.out.println("0. [Back]");
         System.out.print("Selection: ");
-        int choice = scanner.nextInt() - 1;
+        int choice = InputHandler.getValidChoice(0, skillNames.size()) - 1;
         if (choice >= 0 && choice < skillNames.size()) {
             String selectedName = skillNames.get(choice);
             if (getRemainingCD(active, selectedName) > 0) {
@@ -127,7 +127,7 @@ public class BattleManager {
         }
         System.out.println("0. Cancel");
         System.out.print("Selection: ");
-        int choice = scanner.nextInt() - 1;
+        int choice = InputHandler.getValidChoice(0, aliveTargets.size()) - 1;
         if (choice >= 0 && choice < aliveTargets.size()) {
             System.out.println("\n✨ " + attacker.getName() + " uses " + actionName + "!");
             attackType.attack(attacker, aliveTargets.get(choice));
@@ -196,15 +196,26 @@ public class BattleManager {
         return party.stream().anyMatch(Character::isAlive);
     }
 
-    private void handleBattleEnd(List<Character> partyA, List<Character> partyB) {
+    // เปลี่ยน signature รับค่า Party
+    private void handleBattleEnd(Party partyA, List<Character> partyB) {
+        List<Character> playerPartyList = partyA.getMembers();
+
         System.out.println("\n" + "=".repeat(30));
-        if (isPartyAlive(partyA)) {
+        if (partyA.isAlive()) {
             System.out.println("✨ VICTORY! Players have won! ✨");
             int totalXpPool = 0;
+            int totalGoldPool = 0; // เพิ่มตัวแปรเก็บเงินรวม
+
             for (Character enemy : partyB) {
                 totalXpPool += enemy.getXpReward();
+                totalGoldPool += enemy.getGoldReward(); // ดึงเงินจากศัตรู
             }
-            List<Character> survivors = partyA.stream().filter(Character::isAlive).toList();
+
+            // มอบเงินให้กระเป๋ากองกลางของปาร์ตี้
+            partyA.addGold(totalGoldPool);
+            System.out.println("💰 Party found " + totalGoldPool + " Gold! (Total Gold: " + partyA.getGold() + "G)");
+
+            List<Character> survivors = playerPartyList.stream().filter(Character::isAlive).toList();
             if (!survivors.isEmpty()) {
                 int xpPerPerson = totalXpPool / survivors.size();
                 System.out.println("Total XP Pool: " + totalXpPool + " | Each survivor gets: " + xpPerPerson);

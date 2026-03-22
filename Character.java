@@ -14,6 +14,7 @@ public class Character implements Destructible {
     protected Map<String, Attack> skills = new LinkedHashMap<>();
     protected Map<String, Integer> skillCooldowns = new HashMap<>();
     protected Map<String, Integer> lastUsedTurn = new HashMap<>();
+    protected int goldReward;
 
     public Character(String name, int level, int classTier, int maxHP, int damage, int defense, double speed, Weapon weapon, String charClass) {
         this.name = name;
@@ -165,6 +166,14 @@ public class Character implements Destructible {
 
     public void setNextLevelXp(int nextLevelXp) {
         this.nextLevelXp = nextLevelXp;
+    }
+
+    public int getGoldReward() {
+        return goldReward;
+    }
+
+    public void setGoldReward(int goldReward) {
+        this.goldReward = goldReward;
     }
 
     @Override
