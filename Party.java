@@ -5,10 +5,20 @@ import java.util.List;
 public class Party {
     private List<Character> members;
     private int gold;
+    private Inventory inventory;
 
     public Party(List<Character> members, int startingGold) {
         this.members = members;
         this.gold = startingGold;
+        this.inventory = new Inventory();
+    }
+
+    public Inventory getInventory() {
+        return inventory;
+    }
+
+    public void setInventory(Inventory inventory) {
+        this.inventory = inventory;
     }
 
     public List<Character> getMembers() {

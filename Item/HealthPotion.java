@@ -3,59 +3,57 @@ package RPGGame.Item;
 import RPGGame.Character;
 import RPGGame.Consumable;
 
-public class HealthPotion implements Consumable {
-    protected String name;
-    protected int healPower;
-    protected int quantity;
+// ยาเพิ่มเลือด เป็น Item ที่ กินได้(Consumable) และ ซ้อนทับกันได้(Stackable)
+public class HealthPotion extends Item implements Consumable, Stackable {
+    private int healPower;
+    private int quantity;
 
-    public HealthPotion(String name, int healPower, int quantity) {
-        this.name = name;
+    public HealthPotion(String name, String description, int price, int healPower, int quantity) {
+        super(name, description, price); // ส่งข้อมูลพื้นฐานไปให้คลาสแม่ Item
         this.healPower = healPower;
         this.quantity = quantity;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getHealPower() {
-        return healPower;
     }
 
     public void setHealPower(int healPower) {
         this.healPower = healPower;
     }
 
-    public int getQuantity() {
-        return quantity;
-    }
+    public int getHealPower() { return healPower; }
 
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
+    // --- Implement Stackable ---
+    @Override
+    public int getQuantity() { return quantity; }
 
-    public void displayPotionDetails(){
-        System.out.println();
-        System.out.println("--- " + this.getName().toUpperCase() + " ---");
-        System.out.println(" Healing Power: " + this.getHealPower() + " HP");
-        System.out.print(" Quantity: " + this.getQuantity());
-        System.out.print(" Type: Consumable");
-        System.out.println();
+    @Override
+    public void setQuantity(int quantity) { this.quantity = Math.max(0, quantity); }
+
+    @Override
+    public void addQuantity(int amount) { this.quantity += amount; }
+
+    // --- Implement Consumable ---
+    @Override
+    public void use(Character user) {
+        System.out.println("  🧪 " + user.getDisplayName() + " drinks " + this.getName() + "!");
+        int oldHp = user.getHp();
+        user.setHp(Math.min(user.getMaxHP(), user.getHp() + this.healPower));
+        System.out.println("     ❤️ Health restored: " + oldHp + " → " + user.getHp());
+
+        this.addQuantity(-1); // ลดจำนวนลง 1
+        System.out.println("     📊 " + this.getName() + " remaining: " + this.getQuantity());
     }
 
     @Override
-    public void use(Character user) {
-        System.out.println("  \uD83E\uDDEA " + user.getDisplayName() + " drinks " + this.getName() + "!");
-        System.out.println("     ❤\uFE0F Health restored: " + user.getHp() + " → " + (user.getHp()+this.healPower) + " (+" + this.getHealPower() + ")");
-        user.setHp(user.getHp() + this.getHealPower());
-        if (user.getHp() > user.getMaxHP()) {
-            user.setHp(user.getMaxHP());
-        }
-        this.setQuantity(this.getQuantity()-1);
-        System.out.println("     \uD83D\uDCCA " + this.getName() + " remaining: " + this.getQuantity());
+    public boolean canUse(Character target) {
+        return true;
+    }
+
+    // --- Implement abstract method จาก Item ---
+    @Override
+    public void displayDetails() {
+        System.out.println("--- " + this.getName().toUpperCase() + " ---");
+        System.out.println(" Description: " + this.getDescription());
+        System.out.println(" Healing Power: " + this.getHealPower() + " HP");
+        System.out.println(" Quantity: " + this.getQuantity());
+        System.out.println(" Value: " + this.getPrice() + " Gold");
     }
 }

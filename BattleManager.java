@@ -4,6 +4,8 @@ import java.util.*;
 import RPGGame.Character;
 import RPGGame.Decorator.*;
 import RPGGame.BattleInfo;
+import RPGGame.Item.Item;
+import RPGGame.Item.Stackable;
 
 public class BattleManager {
     private final Scanner scanner = new Scanner(System.in);
@@ -29,7 +31,7 @@ public class BattleManager {
                 if (active.isAuto) {
                     handleAutoTurn(active, enemies);
                 } else {
-                    handlePlayerTurn(active, enemies);
+                    handlePlayerTurn(active, partyA, enemies);
                 }
             }
             globalTurnCount++;
@@ -37,16 +39,19 @@ public class BattleManager {
         handleBattleEnd(partyA, partyB);
     }
 
-    private void handlePlayerTurn(Character active, List<Character> enemies) {
+    // เปลี่ยน Signature ให้รับ Party เข้ามาด้วย
+    private void handlePlayerTurn(Character active, Party playerParty, List<Character> enemies) {
         boolean turnFinished = false;
         while (!turnFinished) {
             System.out.println("\n>> " + active.getName().toUpperCase() + " (" + active.getCharClass() + ") | HP: " + active.getHp() + "/" + active.getMaxHP());
             System.out.println("1. Attack");
             System.out.println("2. Skills" + (active.getSkills().isEmpty() ? " [LOCKED]" : ""));
-            System.out.println("3. Check Status");
-            System.out.println("4. Toggle Auto Mode");
+            System.out.println("3. Items"); // 🌟 เมนูใหม่
+            System.out.println("4. Check Status");
+            System.out.println("5. Toggle Auto Mode");
             System.out.print("Selection: ");
-            int choice = InputHandler.getValidChoice(1, 4);
+
+            int choice = InputHandler.getValidChoice(1, 5); // อัปเดตให้เลือกได้ 5 ข้อ
             switch (choice) {
                 case 1 -> turnFinished = performAttackSelection(active, enemies, active.getAttack(), "Attack");
                 case 2 -> {
@@ -56,14 +61,14 @@ public class BattleManager {
                         turnFinished = openSkillMenu(active, enemies);
                     }
                 }
-                case 3 -> active.displayCharacterDetails();
-                case 4 -> {
+                case 3 -> turnFinished = openItemMenu(active, playerParty); // 🌟 เรียกเมนูใช้ไอเทม
+                case 4 -> active.displayCharacterDetails();
+                case 5 -> {
                     active.setAuto(true);
                     System.out.println("🤖 Auto Mode enabled for " + active.getName());
                     handleAutoTurn(active, enemies);
                     turnFinished = true;
                 }
-                default -> System.out.println("Invalid selection.");
             }
         }
     }
@@ -93,6 +98,79 @@ public class BattleManager {
             }
         }
         return false;
+    }
+    // อย่าลืม import RPGGame.Item.Item; และ import RPGGame.Item.Stackable; ไว้ด้านบนด้วยนะครับ
+
+    private boolean openItemMenu(Character active, Party playerParty) {
+        Inventory inventory = playerParty.getInventory();
+        List<RPGGame.Item.Item> allItems = inventory.getItems();
+
+        // 1. ดึงมาเฉพาะไอเทมที่ใช้กดกินได้ (Consumable)
+        List<Consumable> usableItems = new java.util.ArrayList<>();
+        for (RPGGame.Item.Item item : allItems) {
+            if (item instanceof Consumable) {
+                usableItems.add((Consumable) item);
+            }
+        }
+
+        if (usableItems.isEmpty()) {
+            System.out.println("❌ The party has no usable items!");
+            return false; // ไม่เสียเทิร์น ให้กลับไปเลือก Action ใหม่
+        }
+
+        // 2. แสดงรายการไอเทม
+        System.out.println("\n--- 🎒 PARTY INVENTORY ---");
+        for (int i = 0; i < usableItems.size(); i++) {
+            RPGGame.Item.Item item = (RPGGame.Item.Item) usableItems.get(i);
+            System.out.print((i + 1) + ". " + item.getName());
+
+            if (item instanceof RPGGame.Item.Stackable stackItem) {
+                System.out.print(" (x" + stackItem.getQuantity() + ")");
+            }
+            System.out.println(" - " + item.getDescription());
+        }
+        System.out.println("0. [Back]");
+        System.out.print("Select item to use: ");
+
+        int itemChoice = InputHandler.getValidChoice(0, usableItems.size());
+        if (itemChoice == 0) return false;
+
+        Consumable selectedItem = usableItems.get(itemChoice - 1);
+
+        // 3. แสดงรายชื่อเพื่อนในทีมเพื่อเลือกเป้าหมายที่จะป้อนไอเทม (รวมตัวเองด้วย)
+        System.out.println("\nSelect target for " + ((RPGGame.Item.Item)selectedItem).getName() + ":");
+        List<Character> allies = playerParty.getMembers();
+        for (int i = 0; i < allies.size(); i++) {
+            Character ally = allies.get(i);
+            String status = ally.isAlive() ? "(HP: " + ally.getHp() + "/" + ally.getMaxHP() + ")" : "[FAINTED 💀]";
+            System.out.println((i + 1) + ". " + ally.getName() + " " + status);
+        }
+        System.out.println("0. [Cancel]");
+        System.out.print("Select target: ");
+
+        int targetChoice = InputHandler.getValidChoice(0, allies.size());
+        if (targetChoice == 0) return false;
+
+        Character target = allies.get(targetChoice - 1);
+
+        // 4. ตรวจสอบสถานะและความเข้ากันได้ของสายอาชีพ
+        if (!target.isAlive()) {
+            System.out.println("❌ " + target.getName() + " is fainted! Items have no effect.");
+            return false;
+        }
+
+        // 🌟 ระบบป้องกันสายอาชีพ (เช่น Warrior จะกิน Mana Potion ไม่ได้)
+        if (!selectedItem.canUse(target)) {
+            System.out.println("❌ " + target.getName() + " (" + target.getCharClass() + ") cannot use this item!");
+            return false; // คืนค่า false เพื่อให้ไม่เสียเทิร์น
+        }
+
+        // 5. ใช้งานสำเร็จ
+        System.out.println("\n✨ " + active.getName() + " uses " + ((RPGGame.Item.Item)selectedItem).getName() + " on " + target.getName() + "!");
+        selectedItem.use(target);
+        inventory.cleanUpEmptyItems(); // เคลียร์ขวดยาเปล่าออกจากกระเป๋าปาร์ตี้
+
+        return true; // เสียเทิร์น
     }
 
     private AoEDecorator findAoEDecorator(Attack attack) {
