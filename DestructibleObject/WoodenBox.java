@@ -1,6 +1,7 @@
 package RPGGame.DestructibleObject;
 
 import RPGGame.Destructible;
+import RPGGame.Party;
 
 public class WoodenBox implements Destructible {
     protected String name;
@@ -8,13 +9,23 @@ public class WoodenBox implements Destructible {
     protected int hp;
     protected boolean isLocked;
     protected String items;
+    protected int goldReward;
 
-    public WoodenBox(String name, int maxHP, boolean isLocked, String items) {
+    public WoodenBox(String name, int maxHP, boolean isLocked, String items, int goldReward) {
         this.name = name;
         this.maxHP = maxHP;
         this.hp = maxHP;
         this.isLocked = isLocked;
         this.items = items;
+        this.goldReward = goldReward;
+    }
+
+    public int getGoldReward() {
+        return goldReward;
+    }
+
+    public void setGoldReward(int goldReward) {
+        this.goldReward = goldReward;
     }
 
     public String getName() {
@@ -77,13 +88,20 @@ public class WoodenBox implements Destructible {
         System.out.println(" Contains: " + this.getItems());
     }
 
-    public void breakOpen() {
+    // 🌟 แก้ไขเมธอด breakOpen ให้รับ Party และจัดการเพิ่มเงินให้เลย
+    public void breakOpen(Party party) {
         if (isDestroyed()) {
-            System.out.println("\uD83D\uDD13 The lock broke! " + this.getDisplayName() + " breaks open!");
-            System.out.println("\uD83C\uDF81 Contents revealed! " + this.getItems());
+            System.out.println("🔓 The lock broke! " + this.getDisplayName() + " breaks open!");
+            System.out.println("🎁 Contents revealed! " + this.getItems());
+
+            // ให้กล่องเพิ่มเงินเข้าปาร์ตี้โดยตรง
+            if (this.goldReward > 0 && party != null) {
+                party.addGold(this.goldReward);
+                System.out.println("💰 Party gained " + this.goldReward + " Gold from the chest! (Total Gold: " + party.getGold() + "G)");
+            }
         }
         else {
-            System.out.println("⚠\uFE0F Cannot break open " + this.getDisplayName() + " - it's still intact!");
+            System.out.println("⚠️ Cannot break open " + this.getDisplayName() + " - it's still intact!");
         }
     }
 

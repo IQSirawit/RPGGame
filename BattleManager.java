@@ -8,7 +8,6 @@ import RPGGame.Item.Item;
 import RPGGame.Item.Stackable;
 
 public class BattleManager {
-    private final Scanner scanner = new Scanner(System.in);
     private int globalTurnCount = 1;
 
     public void runBattle(Party partyA, List<Character> partyB) {
