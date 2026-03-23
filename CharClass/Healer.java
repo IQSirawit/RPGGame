@@ -27,9 +27,9 @@ public class Healer extends Character {
     private void applyTier2Upgrades(boolean showMessage) {
         this.charClass = "Cleric";
         this.addSkill("Sanctuary",
-                new AoEDecorator(new HealDecorator(new SupportAbility(), 0.8)), 3);
+                new AoEDecorator(new AllyTargetDecorator(new HealDecorator(new SupportAbility(), 0.8))),3);
         this.addSkill("Divine Judgement",
-                new ScalingDamageDecorator(new LifeStealDecorator(new BaseAttack(), 20), "Divine Judgement", 1.25, 20), 3);
+                new ScalingDamageDecorator(new LifeStealDecorator(new BaseAttack(), 20), 1.25, 20), 3);
         if (showMessage) {
             System.out.println(this.getName() + " evolved into a " + this.getCharClass() + "!");
         }

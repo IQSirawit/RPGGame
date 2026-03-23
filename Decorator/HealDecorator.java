@@ -14,16 +14,12 @@ public class HealDecorator extends AttackDecorator {
 
     @Override
     public void attack(Character attacker, Destructible target) {
-        if (target instanceof Character victim) {
-            int healAmount = (int) (attacker.getDamage() * healMultiplier);
-            int oldHp = victim.getHp();
-            victim.setHp(oldHp + healAmount);
-            if (victim.getHp() > victim.getMaxHP()) {
-                victim.setHp(victim.getMaxHP());
-            }
-            int actualHealed = victim.getHp() - oldHp;
-            System.out.println("💚 " + victim.getName() + " was healed for " + actualHealed + " HP!");
+        int healAmount = (int)(attacker.getDamage() * healMultiplier);
+        if (target instanceof Character t) {
+            int hpBefore = t.getHp();
+            t.setHp(Math.min(t.getMaxHP(), t.getHp() + healAmount));
+            int actualHealed = t.getHp() - hpBefore;
+            System.out.println(" 💚 " + t.getName() + " was healed for " + actualHealed + " HP!");
         }
-        wrappedAttack.attack(attacker, target);
     }
 }

@@ -19,15 +19,15 @@ public class Warrior extends Character {
     }
 
     private void addBaseSkills() {
-        this.addSkill("Powerful Strike", new ScalingDamageDecorator(new BaseAttack(), "Powerful Strike", 1.3, 0), 1);
+        this.addSkill("Powerful Strike", new ScalingDamageDecorator(new BaseAttack(), 1.3, 0), 1);
     }
 
     private void applyTier2Upgrades(boolean showMessage) {
         this.charClass = "Knight";
         this.addSkill("Grand Smash",
-                new ScalingDamageDecorator(new ArmorPierceDecorator(new BaseAttack(), 30), "Grand Smash", 1.8, 5), 3);
+                new ScalingDamageDecorator(new ArmorPierceDecorator(new BaseAttack(), 30), 1.8, 5), 3);
         this.addSkill("Whirlwind Slash",
-                new AoEDecorator(new ScalingDamageDecorator(new BaseAttack(), "Whirlwind Slash", 0.7, 5)), 2);
+                new AoEDecorator(new ScalingDamageDecorator(new BaseAttack(), 0.7, 5)), 2);
         if (showMessage) {
             System.out.println(this.getName() + " evolved into a " + this.charClass + "!");
         }

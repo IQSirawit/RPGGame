@@ -254,6 +254,10 @@ public class Character implements Destructible {
         return this.level * 25;
     }
 
+    public void resetStatus() {
+        this.isAuto = false;
+    }
+
     @Override
     public boolean isDestroyed() {
         return this.hp <= 0;

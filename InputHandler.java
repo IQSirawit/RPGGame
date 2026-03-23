@@ -23,11 +23,10 @@ public class InputHandler {
                 if (choice >= min && choice <= max) {
                     return choice; // ค่าถูกต้อง ส่งกลับไปใช้งาน
                 } else {
-                    System.out.print("⚠️ โปรดเลือกหมายเลขระหว่าง " + min + " ถึง " + max + " เท่านั้น: ");
+                    System.out.print("⚠️ Please select a number between " + min + " and " + max + " only: ");
                 }
             } catch (NumberFormatException e) {
-                // ดักจับ Error กรณีที่ผู้เล่นพิมพ์ตัวอักษรหรือสัญลักษณ์
-                System.out.print("❌ ข้อมูลไม่ถูกต้อง! โปรดกรอกเป็น 'ตัวเลข' เท่านั้น: ");
+                System.out.print("❌ Invalid input! Please enter a 'number' only: ");
             }
         }
     }

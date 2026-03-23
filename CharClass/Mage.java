@@ -21,15 +21,15 @@ public class Mage extends Character {
     }
 
     private void addBaseSkills() {
-        this.addSkill("Magic Missile", new ScalingDamageDecorator(new SpellDecorator(new BaseAttack(), "Magic Missile", 20), "Magic Missile", 1.0, 25), 0);
+        this.addSkill("Magic Missile", new ScalingDamageDecorator(new SpellDecorator(new BaseAttack(), 20), 1.0, 25), 0);
     }
 
     private void applyTier2Upgrades(boolean showMessage) {
         this.charClass = "Wizard";
         this.addSkill("Blizzard",
-                new SpellDecorator(new AoEDecorator(new ScalingDamageDecorator(new BaseAttack(), "Blizzard", 0.7, 0)), "Blizzard", 50), 3);
+                new SpellDecorator(new AoEDecorator(new ScalingDamageDecorator(new BaseAttack(), 0.7, 0)), 50), 3);
         this.addSkill("Life Drain",
-                new SpellDecorator(new LifeStealDecorator(new ScalingDamageDecorator(new BaseAttack(), "Life Drain", 1.2, 0), 20), "Life Drain", 40), 2);
+                new SpellDecorator(new LifeStealDecorator(new ScalingDamageDecorator(new BaseAttack(), 1.2, 0), 20), 40), 2);
         if (showMessage) {
             System.out.println(this.getName() + " evolved into a " + this.charClass + "!");
         }

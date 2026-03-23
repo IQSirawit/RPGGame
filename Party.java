@@ -13,6 +13,11 @@ public class Party {
         this.inventory = new Inventory();
     }
 
+    public Party(List<Character> members) {
+        this.members = members;
+        this.inventory = new Inventory();
+    }
+
     public Inventory getInventory() {
         return inventory;
     }

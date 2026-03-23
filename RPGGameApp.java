@@ -15,22 +15,21 @@ public class RPGGameApp {
         Warrior warrior = new Warrior("Arthur", 19, 1, 300, 20, 15, 10, 10, sword);
         Archer archer = new Archer("Legolas", 19, 1, 250, 25, 5, 30, 85, bow);
         Mage mage = new Mage("Gandalf", 19, 1, 200, 30, 5, 15, 100, staff);
-        Healer healer = new Healer("Mercy", 19, 1, 220, 10, 10, 12, mace);
+        Healer healer = new Healer("Mercy", 19, 2, 220, 10, 10, 12, mace);
 
         List<Character> playerParty = new ArrayList<>(Arrays.asList(warrior, archer, mage, healer));
 
         // ✨ สร้าง Party ใหม่ มีเงินเริ่มต้น 100 Gold
         Party myParty = new Party(playerParty, 100);
-        List<Character> enemyParty = new ArrayList<>();
+        List<Character> enemyList = new ArrayList<>();
         for (int i = 0; i < 6; i++) {
             char label = (char) ('A' + i);
             Warrior dummy = new Warrior("Dummy " + label, 1, 1, 1, 1, 0, 1, 0, sword);
             dummy.setXpReward(1500);
             dummy.setGoldReward(100);
-            dummy.setAuto(true);
-            enemyParty.add(dummy);
+            enemyList.add(dummy);
         }
-
+        Party enemyParty = new Party(enemyList);
         System.out.println("=== SYSTEM TEST: EVOLUTION & HEALING ===");
         System.out.println("Scenario: Heroes are Level 19. Defeating 1HP dummies will trigger Level 20.");
         BattleManager bm = new BattleManager();

@@ -7,11 +7,9 @@ import RPGGame.Destructible;
 public class ScalingDamageDecorator extends AttackDecorator {
     private final double multiplier;
     private final int flatBonus;
-    private final String skillName;
 
-    public ScalingDamageDecorator(Attack wrappedAttack, String skillName, double multiplier, int flatBonus) {
+    public ScalingDamageDecorator(Attack wrappedAttack, double multiplier, int flatBonus) {
         super(wrappedAttack);
-        this.skillName = skillName;
         this.multiplier = multiplier;
         this.flatBonus = flatBonus;
     }

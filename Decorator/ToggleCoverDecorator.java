@@ -16,10 +16,14 @@ public class ToggleCoverDecorator extends AttackDecorator {
             if (!archer.hasRangeAdvantage()) {
                 archer.setRangeAdvantage(true);
                 archer.setSpeed(archer.getSpeed()*0.7);
+                archer.setDefense(archer.getDefense()+10);
+                archer.setStatus("Active [In Cover]");
                 System.out.println("🛡️ " + archer.getName() + " takes cover! [Range Advantage: ON] [Speed: " + archer.getSpeed() + "]");
             } else {
                 archer.setRangeAdvantage(false);
                 archer.setSpeed(archer.getSpeed()/0.7);
+                archer.setDefense(archer.getDefense()-10);
+                archer.setStatus("Active");
                 System.out.println("🏃 " + archer.getName() + " leaves cover! [Range Advantage: OFF] [Speed: " + archer.getSpeed() + "]");
             }
         }

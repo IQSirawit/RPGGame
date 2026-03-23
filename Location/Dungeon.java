@@ -39,13 +39,12 @@ public class Dungeon extends Location {
 
             System.out.println("\n🌊 --- WAVE " + i + " / " + waves + " ---");
 
-            // สุ่มเกิด Event สิ่งกีดขวาง (โอกาส 40% ในแต่ละ Wave)
             if (random.nextDouble() < 0.4) {
                 handleObstacleEvent(party);
             }
 
-            // สุ่มศัตรูประจำ Wave ยิ่ง Wave สูง ศัตรูยิ่งเก่งและเยอะ
-            List<Character> enemyParty = generateEnemies(i);
+            List<RPGGame.Character> enemyList = generateEnemies(i);
+            Party enemyParty = new Party(enemyList, 0);
             BattleManager bm = new BattleManager();
             bm.runBattle(party, enemyParty);
         }
@@ -110,7 +109,6 @@ public class Dungeon extends Location {
 
         for (int i = 0; i < numEnemies; i++) {
             Warrior monster = new Warrior("Dungeon Skeleton " + (char)('A' + i), 5 + wave, 1, 80 + (wave * 20), 10 + (wave * 5), 5 + wave, 10, 2, claws);
-            monster.setAuto(true);
             monster.setXpReward(60 + (wave * 20));
             monster.setGoldReward(30 + (wave * 10));
             enemies.add(monster);

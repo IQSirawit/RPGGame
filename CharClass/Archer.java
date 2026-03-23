@@ -9,7 +9,6 @@ import RPGGame.Weapon;
 public class Archer extends Character {
     private int Accuracy;
     private boolean isRangeAdvantage;
-    private double coveredSpeed;
 
     public Archer(String name, int level, int classTier, int maxHP, int damage, int defense, int speed, int accuracy, Weapon weapon) {
         super(name, level, classTier, maxHP, damage, defense, speed, weapon, "Archer");
@@ -17,7 +16,7 @@ public class Archer extends Character {
         this.isRangeAdvantage = false;
         this.attack = new RangeAdvantageDecorator(
                 new BaseAttack(),
-                new ScalingDamageDecorator(new BaseAttack(), "Cover Shot", 1.2, 0)
+                new ScalingDamageDecorator(new BaseAttack(), 1.2, 0)
         );
         addBaseSkills();
         if (this.classTier >= 2) {
@@ -27,14 +26,14 @@ public class Archer extends Character {
 
     private void addBaseSkills() {
         this.addSkill("Take Cover", new SelfTargetDecorator(new ToggleCoverDecorator(new BaseAttack())), 0);
-        this.addSkill("Charged Shot", new ScalingDamageDecorator(new AccuracyDecorator(new BaseAttack(), "Charged Shot", this.getAccuracy()), "Charged Shot", 2.5, 10), 2);
+        this.addSkill("Charged Shot", new ScalingDamageDecorator(new AccuracyDecorator(new BaseAttack(), this.getAccuracy()), 2.5, 10), 2);
     }
 
     private void applyTier2Upgrades(boolean showMessage) {
         this.charClass = "Hunter";
-        this.addSkill("Precise Shot", new ScalingDamageDecorator(new AccuracyDecorator(new CritChanceDecorator(new BaseAttack(), 15), "Precise Shot", 100), "Precise Shot", 1.4, 5), 1);
-        Attack normalSnipe = new ScalingDamageDecorator(new AccuracyDecorator(new ArmorPierceDecorator(new BaseAttack(), 20), "Snipe Shot", this.getAccuracy()+10), "Snipe Shot", 1.65, 10);
-        Attack advantageSnipe = new ScalingDamageDecorator(new AccuracyDecorator(new CritChanceDecorator(new ArmorPierceDecorator(new BaseAttack(), 30), 30), "Snipe Shot", this.getAccuracy()+1), "Snipe Shot", 1.65, 15);
+        this.addSkill("Precise Shot", new ScalingDamageDecorator(new AccuracyDecorator(new CritChanceDecorator(new BaseAttack(), 15), 100), 1.4, 5), 1);
+        Attack normalSnipe = new ScalingDamageDecorator(new AccuracyDecorator(new ArmorPierceDecorator(new BaseAttack(), 20), this.getAccuracy()+10), 1.65, 10);
+        Attack advantageSnipe = new ScalingDamageDecorator(new AccuracyDecorator(new CritChanceDecorator(new ArmorPierceDecorator(new BaseAttack(), 30), 30), this.getAccuracy()+1), 1.65, 15);
         this.addSkill("Snipe Shot", new RangeAdvantageDecorator(normalSnipe, advantageSnipe), 3);
         if (showMessage) {
             System.out.println(this.getName() + " evolved into a " + this.charClass + "!");
@@ -89,4 +88,14 @@ public class Archer extends Character {
             applyTier2Upgrades(true);
         }
     }
+
+    public void resetStatus() {
+        super.resetStatus();
+        if (this.isRangeAdvantage) {
+            this.setSpeed(this.getSpeed() / 0.7);
+            this.setDefense(this.getDefense() - 10);
+            this.isRangeAdvantage = false;
+        }
+    }
+
 }

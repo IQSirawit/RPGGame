@@ -6,12 +6,10 @@ import RPGGame.Character;
 import RPGGame.Destructible;
 
 public class SpellDecorator extends AttackDecorator {
-    private final String spellName;
     private final int manaCost;
 
-    public SpellDecorator(Attack wrappedAttack, String spellName, int manaCost) {
+    public SpellDecorator(Attack wrappedAttack, int manaCost) {
         super(wrappedAttack);
-        this.spellName = spellName;
         this.manaCost = manaCost;
     }
 
@@ -22,12 +20,11 @@ public class SpellDecorator extends AttackDecorator {
             return;
         }
         if (mage.getMana() < manaCost) {
-            System.out.println("❌ " + mage.getName() + " tries to cast " + spellName +
-                    " but is out of mana! (Needs: " + manaCost + ")");
-            return; // Chain stops here
+            System.out.println("❌ " + mage.getName() + " tries to cast a spell but is out of mana! (Needs: " + manaCost + ")");
+            return;
         }
         mage.setMana(mage.getMana() - manaCost);
-        System.out.println("✨ " + mage.getName() + " spent " + manaCost + " mana to cast " + spellName + ".");
+        System.out.println("✨ " + mage.getName() + " spent " + manaCost + " mana to cast the spell.");
 
         wrappedAttack.attack(attacker, target);
     }
