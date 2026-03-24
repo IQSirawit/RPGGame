@@ -26,7 +26,7 @@ public class RPGGameApp {
             char label = (char) ('A' + i);
             Warrior dummy = new Warrior("Dummy " + label, 1, 1, 1, 1, 0, 1, 0, sword);
             dummy.setXpReward(1500);
-            dummy.setGoldReward(100);
+            dummy.setGoldReward(10);
             dummy.setAuto(true);
             enemyParty.add(dummy);
         }
@@ -45,6 +45,7 @@ public class RPGGameApp {
         Location weaponShop = new Shop("Garnet's Goods", "We have everything an adventurer needs!");
         Location darkForest = new Forest("Whispering Woods", "A dark and gloomy forest full of monsters.");
         Location creepyDungeon = new Dungeon("Catacombs of Despair", "A multi-level dungeon with terrifying creatures and obstacles.");
+        Location dragonCave = new DragonCave("Dragon Cave", "A scorching hot cave where the legendary Fire Dragon slumbers.");
 
         Scanner mapScanner = new Scanner(System.in);
         boolean isPlaying = true;
@@ -55,15 +56,19 @@ public class RPGGameApp {
             System.out.println("2. Enter " + weaponShop.getName());
             System.out.println("3. Enter " + darkForest.getName());
             System.out.println("4. Enter " + creepyDungeon.getName());
+            System.out.println("5. Enter " + dragonCave.getName()); // ✨ เพิ่มเมนูที่ 5
             System.out.println("0. Quit Game");
             System.out.print("Where do you want to go?: ");
 
-            int choice = InputHandler.getValidChoice(0, 4);
+
+            int choice = InputHandler.getValidChoice(0, 5);
+
             switch (choice) {
-                case 1 -> townInn.enter(myParty); // ทำงานแบบ Inn
-                case 2 -> weaponShop.enter(myParty); // ทำงานแบบ Shop
-                case 3 -> darkForest.enter(myParty); // ทำงานแบบ Forest (เข้าต่อสู้)
+                case 1 -> townInn.enter(myParty);
+                case 2 -> weaponShop.enter(myParty);
+                case 3 -> darkForest.enter(myParty);
                 case 4 -> creepyDungeon.enter(myParty);
+                case 5 -> dragonCave.enter(myParty); // ✨ เรียกฟังก์ชัน enter ของถ้ำมังกร
                 case 0 -> isPlaying = false;
                 default -> System.out.println("Invalid destination!");
             }

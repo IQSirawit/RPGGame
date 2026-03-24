@@ -64,7 +64,8 @@ public class Dungeon extends Location {
     }
 
     private void handleObstacleEvent(Party party) {
-        int type = random.nextInt(3);
+        // เปลี่ยนจากสุ่ม 3 เป็น 4 อย่าง เพื่อเพิ่มโอกาสเจอกล่องทอง
+        int type = random.nextInt(4);
         Destructible obstacle = null;
 
         // สุ่มสิ่งกีดขวาง
@@ -72,6 +73,7 @@ public class Dungeon extends Location {
             case 0 -> obstacle = new WoodenBox("Old Chest", 150, true, "100 Gold", 100);
             case 1 -> obstacle = new StoneWall("Dungeon Wall", 250, "Cobblestone");
             case 2 -> obstacle = new CastleGate("Iron Gate", 300, true, true);
+            case 3 -> obstacle = new GoldenBox("Golden Box", 300, true, "Rare Treasures", 500);
         }
 
         System.out.println("\n⚠️ A " + obstacle.getDisplayName() + " blocks your path!");
