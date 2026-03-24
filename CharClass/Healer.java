@@ -18,10 +18,10 @@ public class Healer extends Character {
 
     private void applyBaseSkills() {
         this.addSkill("Prayer",
-                new SelfTargetDecorator(new HealDecorator(new SupportAbility(), 0.5)), 0);
+                new SelfTargetDecorator(new HealDecorator(new SupportAbility(), 1.5)), 0);
 
         this.addSkill("Holy Light",
-                new AllyTargetDecorator(new HealDecorator(new SupportAbility(), 1.0)), 1);
+                new AllyTargetDecorator(new HealDecorator(new SupportAbility(), 2)), 1);
     }
 
     private void applyTier2Upgrades(boolean showMessage) {
@@ -29,7 +29,7 @@ public class Healer extends Character {
         this.addSkill("Sanctuary",
                 new AoEDecorator(new AllyTargetDecorator(new HealDecorator(new SupportAbility(), 0.8))),3);
         this.addSkill("Divine Judgement",
-                new ScalingDamageDecorator(new LifeStealDecorator(new BaseAttack(), 20), 1.25, 20), 3);
+                new ScalingDamageDecorator(new LifeStealDecorator(new BaseAttack(), 20), 2, 20), 3);
         if (showMessage) {
             System.out.println(this.getName() + " evolved into a " + this.getCharClass() + "!");
         }

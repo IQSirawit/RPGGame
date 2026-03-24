@@ -1,6 +1,8 @@
 package RPGGame;
 
 import java.util.*;
+
+import RPGGame.CharClass.*;
 import RPGGame.Character;
 import RPGGame.Decorator.*;
 import RPGGame.BattleInfo;
@@ -31,14 +33,14 @@ public class BattleManager {
             allParticipants.sort((c1, c2) -> Double.compare(c2.getSpeed(), c1.getSpeed()));
             for (Character active : allParticipants) {
                 if (!active.isAlive() || !players.isAlive() || !enemies.isAlive()) continue;
+                System.out.println("\n" + "-".repeat(20));
                 boolean isPlayerSide = players.getMembers().contains(active);
                 List<Character> allyList = isPlayerSide ? players.getMembers() : enemies.getMembers();
                 List<Character> opponentList = isPlayerSide ? enemies.getMembers() : players.getMembers();
                 BattleInfo.setAllies(allyList);
                 BattleInfo.setEnemies(opponentList);
-
                 if (active.isAuto) {
-                    handleAutoTurn(active, opponentList);
+                    handleAutoTurn(active, allyList, opponentList);
                 } else {
                     handlePlayerTurn(active, players, opponentList);
                 }
@@ -51,7 +53,7 @@ public class BattleManager {
     private void handlePlayerTurn(Character active, Party playerParty, List<Character> enemies) {
         boolean turnFinished = false;
         while (!turnFinished) {
-            System.out.println("\n>> " + active.getName().toUpperCase() + " (" + active.getCharClass() + ") | HP: " + active.getHp() + "/" + active.getMaxHP());
+            System.out.println(">> " + active.getName().toUpperCase() + " (" + active.getCharClass() + ") | HP: " + active.getHp() + "/" + active.getMaxHP());
             System.out.println("1. Attack");
             System.out.println("2. Skills" + (active.getSkills().isEmpty() ? " [LOCKED]" : ""));
             System.out.println("3. Items");
@@ -62,19 +64,13 @@ public class BattleManager {
             int choice = InputHandler.getValidChoice(1, 5);
             switch (choice) {
                 case 1 -> turnFinished = performAttackSelection(active, enemies, active.getAttack(), "Attack");
-                case 2 -> {
-                    if (active.getSkills().isEmpty()) {
-                        System.out.println("❌ This character has no skills!");
-                    } else {
-                        turnFinished = openSkillMenu(active, enemies);
-                    }
-                }
+                case 2 -> turnFinished = openSkillMenu(active, enemies);
                 case 3 -> turnFinished = openItemMenu(active, playerParty);
                 case 4 -> active.displayCharacterDetails();
                 case 5 -> {
                     active.setAuto(true);
-                    System.out.println("🤖 Auto Mode enabled for " + active.getName());
-                    handleAutoTurn(active, enemies);
+                    System.out.println("🤖 Auto Mode enabled for " + active.getName() + "\n");
+                    handleAutoTurn(active, playerParty.getMembers(), enemies);
                     turnFinished = true;
                 }
             }
@@ -175,6 +171,7 @@ public class BattleManager {
         for (int i = 0; i < aliveTargets.size(); i++) {
             System.out.println((i + 1) + ". " + aliveTargets.get(i).getName());
         }
+        System.out.print("Selection: ");
         int choice = InputHandler.getValidChoice(0, aliveTargets.size()) - 1;
         if (choice >= 0) {
             attackType.attack(attacker, aliveTargets.get(choice));
@@ -183,19 +180,52 @@ public class BattleManager {
         return false;
     }
 
-    private void handleAutoTurn(Character active, List<Character> opponents) {
-        Character target = findWeakest(opponents);
-        if (target == null) return;
+    private void handleAutoTurn(Character active, List<Character> allies, List<Character> opponents) {
         for (String skillName : active.getSkills().keySet()) {
+            Attack skill = active.getSkills().get(skillName);
             if (getRemainingCD(active, skillName) == 0) {
-                System.out.println("🤖 [AUTO] " + active.getName() + " uses " + skillName + " on " + target.getName() + "!");
-                active.getSkills().get(skillName).attack(active, target);
-                active.getLastUsedTurn().put(skillName, globalTurnCount);
-                return;
+                int cost = getManaCost(skill);
+                if (active instanceof Mage mage && mage.getMana() < cost) {
+                    continue;
+                }
+
+                if (isToggleAlreadyActive(skill, active)) {
+                    continue;
+                }
+
+                Character target = null;
+
+                if (skill instanceof SelfTargetDecorator) {
+                    target = active;
+                    if ((double)active.getHp() / active.getMaxHP() >= 0.9) continue;
+
+                } else if (isStanceSkill(skill)) {
+                    target = active;
+
+                } else if (hasAllyTargetDecorator(skill)) {
+                    target = allies.stream()
+                            .filter(a -> a.isAlive() && (double)a.getHp() / a.getMaxHP() < 0.9)
+                            .min(Comparator.comparingDouble(a -> (double)a.getHp() / a.getMaxHP()))
+                            .orElse(null);
+
+                    if (target == null) continue;
+                } else {
+                    target = findWeakest(opponents);
+                }
+
+                if (target != null) {
+                    System.out.println("🤖 [AUTO] " + active.getName() + " uses " + skillName + " on " + target.getName() + "!");
+                    skill.attack(active, target);
+                    active.getLastUsedTurn().put(skillName, globalTurnCount);
+                    return;
+                }
             }
         }
-        System.out.println("🤖 [AUTO] " + active.getName() + " attacks " + target.getName() + "!");
-        active.getAttack().attack(active, target);
+        Character enemyTarget = findWeakest(opponents);
+        if (enemyTarget != null) {
+            System.out.println("🤖 [AUTO] " + active.getName() + " attacks " + enemyTarget.getName() + "!");
+            active.getAttack().attack(active, enemyTarget);
+        }
     }
 
     private Character findWeakest(List<Character> group) {
@@ -203,6 +233,30 @@ public class BattleManager {
                 .filter(Character::isAlive)
                 .min(Comparator.comparingDouble(c -> (double) c.getHp() / c.getMaxHP()))
                 .orElse(null);
+    }
+
+    private int getManaCost(Attack skill) {
+        if (skill instanceof SpellDecorator sd) return sd.getManaCost();
+        if (skill instanceof AttackDecorator ad) return getManaCost(ad.getWrappedAttack());
+        return 0;
+    }
+
+    private boolean isStanceSkill(Attack skill) {
+        if (skill instanceof ToggleCoverDecorator) return true;
+        if (skill instanceof AttackDecorator ad) return isStanceSkill(ad.getWrappedAttack());
+        return false;
+    }
+
+    private boolean isToggleAlreadyActive(Attack skill, Character active) {
+        if (skill instanceof ToggleCoverDecorator && active instanceof Archer archer) {
+            return archer.hasRangeAdvantage(); // If true, they are already in cover!
+        }
+
+        if (skill instanceof AttackDecorator ad) {
+            return isToggleAlreadyActive(ad.getWrappedAttack(), active);
+        }
+
+        return false;
     }
 
     private int getRemainingCD(Character c, String skillName) {

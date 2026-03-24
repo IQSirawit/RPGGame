@@ -57,7 +57,7 @@ public class Warrior extends Character {
 
     @Override
     public int takeDamage(int damage) {
-        System.out.println("🛡️ Warrior Armor Absorbs " + this.armorValue + " damage! (reduces damage from " + damage + " to " + (damage-this.getArmorValue()) + ")");
+        System.out.println("🛡️ " + this.getDisplayName() + " Armor Absorbs " + this.armorValue + " damage! (reduces damage from " + damage + " to " + (damage-this.getArmorValue()) + ")");
         damage -= this.armorValue;
         if (damage < 0) {
             damage = 0;

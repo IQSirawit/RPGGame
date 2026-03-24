@@ -56,6 +56,15 @@ public class Inventory {
         }
     }
 
+    public boolean hasItem(String itemName) {
+        for (Item item : items) {
+            if (item.getName().equalsIgnoreCase(itemName)) {
+                return true; // เจอไอเทมนี้ในกระเป๋าแล้ว
+            }
+        }
+        return false; // ยังไม่มีไอเทมนี้
+    }
+
     public List<Item> getItems() {
         return items;
     }

@@ -95,6 +95,7 @@ public class Archer extends Character {
             this.setSpeed(this.getSpeed() / 0.7);
             this.setDefense(this.getDefense() - 10);
             this.isRangeAdvantage = false;
+            this.setStatus("Active");
         }
     }
 

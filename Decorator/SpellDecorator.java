@@ -20,12 +20,16 @@ public class SpellDecorator extends AttackDecorator {
             return;
         }
         if (mage.getMana() < manaCost) {
-            System.out.println("❌ " + mage.getName() + " tries to cast a spell but is out of mana! (Needs: " + manaCost + ")");
+            System.out.println("-❌ " + mage.getName() + " tries to cast a spell but is out of mana! (Needs: " + manaCost + ")");
             return;
         }
         mage.setMana(mage.getMana() - manaCost);
-        System.out.println("✨ " + mage.getName() + " spent " + manaCost + " mana to cast the spell.");
+        System.out.println("-✨ " + mage.getName() + " spent " + manaCost + " mana to cast the spell.");
 
         wrappedAttack.attack(attacker, target);
+    }
+    
+    public int getManaCost() {
+        return manaCost;
     }
 }

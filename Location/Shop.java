@@ -4,9 +4,8 @@ import RPGGame.Character;
 import RPGGame.InputHandler;
 import RPGGame.Item.HealthPotion;
 import RPGGame.Item.ManaPotion;
+import RPGGame.Item.DragonOrb;
 import RPGGame.Party;
-
-import java.util.List;
 
 public class Shop extends Location {
 
@@ -21,14 +20,28 @@ public class Shop extends Location {
             System.out.println("\n🛒 === " + this.getName() + " ===");
             System.out.println(this.getDescription());
             System.out.println("💰 Your Gold: " + party.getGold() + "G");
+            System.out.println("3. Buy Dragon Orb (1000g)");
             System.out.println("2. Buy Health Potion (50g)");
             System.out.println("1. Buy Mana Potion (20g)");
             System.out.println("0. Leave Shop");
             System.out.print("Select: ");
 
-            int choice = InputHandler.getValidChoice(0, 2);
-            if (choice == 2) {
-                // เช็คว่ามีเงินพอไหม
+            int choice = InputHandler.getValidChoice(0, 3); // ขยายขอบเขตเป็น 0 ถึง 3
+
+            if (choice == 3) {
+                // เช็คว่ามี Dragon Orb หรือยัง
+                if (party.getInventory().hasItem("Dragon Orb")) {
+                    System.out.println("❌ Shopkeeper: You already have a Dragon Orb! You don't need another one.");
+                } else {
+                    if (party.spendGold(1000)) {
+                        System.out.println("✅ You bought a Dragon Orb! (Remaining Gold: " + party.getGold() + "G)");
+                        party.getInventory().addItem(new DragonOrb());
+                    } else {
+                        System.out.println("❌ Shopkeeper: You can't afford that! You need 1000G.");
+                    }
+                }
+            } else if (choice == 2) {
+
                 if (party.spendGold(50)) {
                     System.out.println("✅ You bought a Health Potion! (Remaining Gold: " + party.getGold() + "G)");
                     party.getInventory().addItem(new HealthPotion("Health Potion", "Heals 50 HP", 50, 50, 1));
@@ -36,6 +49,7 @@ public class Shop extends Location {
                     System.out.println("❌ Shopkeeper: You can't afford that!");
                 }
             } else if (choice == 1) {
+
                 if (party.spendGold(20)) {
                     System.out.println("✅ You bought a Mana Potion! (Remaining Gold: " + party.getGold() + "G)");
                     party.getInventory().addItem(new ManaPotion("Mana Potion", "Heals mana 100 MP", 20, 100, 1));
