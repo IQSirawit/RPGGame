@@ -3,6 +3,8 @@ package RPGGame;
 import RPGGame.CharClass.*;
 import RPGGame.Location.*;
 import RPGGame.Item.*;
+import RPGGame.Save.SaveManager;
+
 import java.util.*;
 
 public class RPGGameApp {
@@ -34,20 +36,52 @@ public class RPGGameApp {
         // --- 3. ระบบลูปหลักของเกม (Main Menu / Camp) ---
         boolean isPlaying = true;
 
-        while(isPlaying && myParty.isAlive()) {
+        while(isPlaying) {
+
+            // ✨ 2. ดักจับสถานะ Game Over ไว้ตรงหัวลูป
+            if (!myParty.isAlive()) {
+                System.out.println("\n💀 Your party has been wiped out... GAME OVER!");
+                System.out.println("Do you want to load your last save?");
+                System.out.println("1. 📂 Yes, load last save");
+                System.out.println("0. ❌ No, quit game");
+                System.out.print("Select: ");
+
+                int deathChoice = InputHandler.getValidChoice(0, 1);
+                if (deathChoice == 1) {
+                    boolean success = SaveManager.loadGame(myParty);
+                    if (success && myParty.isAlive()) {
+                        System.out.println("✨ Time has rewound. You are back at the camp!");
+                        continue; // กลับไปเริ่มลูปเมนู Camp ใหม่
+                    } else {
+                        System.out.println("❌ Cannot restore the party. Your journey ends here.");
+                        isPlaying = false;
+                        break;
+                    }
+                } else {
+                    isPlaying = false;
+                    break;
+                }
+            }
+
             System.out.println("\n🔥 === CAMP (MAIN MENU) === 🔥");
             System.out.println("What would you like to do?");
             System.out.println("1. 🗺️ Explore the World (Travel)");
             System.out.println("2. 📋 Check Party Status");
             System.out.println("3. 🎒 Open Inventory");
+            System.out.println("4. 🏕️ Rest by the Campfire (Free, heals 20% HP/MP)");
+            System.out.println("5. 💾 Save Game");  // ✨ เพิ่มเมนู Save
+            System.out.println("6. 📂 Load Game");  // ✨ เพิ่มเมนู Load
             System.out.println("0. ❌ Quit Game");
             System.out.print("Select an action: ");
 
-            int choice = InputHandler.getValidChoice(0, 3);
+            int choice = InputHandler.getValidChoice(0, 6); // ✨ อัปเดตขอบเขตเป็น 6
             switch (choice) {
                 case 1 -> exploreMenu(myParty, townInn, weaponShop, darkForest, creepyDungeon, dragonCave);
                 case 2 -> showPartyStatus(myParty);
                 case 3 -> openInventoryMenu(myParty);
+                case 4 -> restByCampfire(myParty);
+                case 5 -> SaveManager.saveGame(myParty); // ✨ เรียกใช้ระบบ Save
+                case 6 -> SaveManager.loadGame(myParty); // ✨ เรียกใช้ระบบ Load
                 case 0 -> {
                     System.out.println("Quitting game... Goodbye hero!");
                     isPlaying = false;
@@ -205,6 +239,35 @@ public class RPGGameApp {
         consumable.use(target);
         System.out.println("\nPress ENTER to continue...");
         InputHandler.getStringInput();
+    }
+
+    // ✨ เมธอดใหม่สำหรับพักผ่อนที่กองไฟ
+    private static void restByCampfire(Party party) {
+        System.out.println("\n🏕️ The party sets up a small campfire and rests for a few hours...");
+
+        for (Character c : party.getMembers()) {
+            if (c.isAlive()) {
+                // คำนวณฮีลเลือด 20% ของ Max HP
+                int healAmount = (int) (c.getMaxHP() * 0.20);
+                int oldHp = c.getHp();
+                c.setHp(Math.min(c.getMaxHP(), c.getHp() + healAmount));
+
+                String extraInfo = "";
+                // ถ้าเป็น Mage ให้ฟื้นฟู Mana 20% ด้วย เพื่อให้พอร่ายเวทได้บ้าง
+                if (c instanceof Mage mage) {
+                    int manaHeal = (int) (mage.getMaxMana() * 0.20);
+                    mage.setMana(Math.min(mage.getMaxMana(), mage.getMana() + manaHeal));
+                    extraInfo = " & " + manaHeal + " MP";
+                }
+
+                int actualHealed = c.getHp() - oldHp;
+                System.out.println("  ✨ " + c.getName() + " recovered " + actualHealed + " HP" + extraInfo + ". (Current HP: " + c.getHp() + "/" + c.getMaxHP() + ")");
+            }
+        }
+
+        System.out.println("\nThe party feels slightly refreshed, but it's nothing compared to a real Inn.");
+        System.out.println("Press ENTER to continue...");
+        InputHandler.getStringInput(); // รอผู้เล่นกด Enter
     }
 
     // ✨ เมธอดใหม่สำหรับแสดงคำอธิบายสถานที่
